@@ -452,26 +452,58 @@ class _WritePostState extends State<WritePostScreen> {
 
   Future<String> sendPostRequest(String message) async {
     String url = 'http://165.132.46.82:30527/';
+    String secondUrl = 'http://93.114.160.254:40343/';
     Map<String, String> headers = {"Content-Type": "application/json"};
     String jsonBody = json.encode({'text': message});
 
-    // POST 요청을 보내고 응답을 받음
-    final response = await http.post(
-      Uri.parse(url),
-      headers: headers,
-      body: jsonBody,
-    );
+    try {
+      // 첫 번째 URL로 요청
+      final response = await http.post(
+        Uri.parse(url),
+        headers: headers,
+        body: jsonBody,
+      );
 
-    var data = json.decode(utf8.decode(response.bodyBytes));
+      var data = json.decode(utf8.decode(response.bodyBytes));
 
-    String id = data['image_id'];
-    print(id);
-    Widget imageWidget = await getImage(id);
+      String id = data['image_id'];
+      print(id);
+      Widget imageWidget = await getImage(id);
 
-    setState(() {
-      widgetList.add(imageWidget);
-      contentList.add(id);
-    });
-    return utf8.decode(response.bodyBytes);
+      setState(() {
+        widgetList.add(imageWidget);
+        contentList.add(id);
+      });
+
+      return utf8.decode(response.bodyBytes);
+    } catch (e) {
+      print('Error in the first request: $e');
+
+      try {
+        // 두 번째 URL로 요청
+        final secondResponse = await http.post(
+          Uri.parse(secondUrl),
+          headers: headers,
+          body: jsonBody,
+        );
+
+        var secondData = json.decode(utf8.decode(secondResponse.bodyBytes));
+
+        String id = secondData['image_id'];
+        print(id);
+        Widget imageWidget = await getImage(id);
+
+        setState(() {
+          widgetList.add(imageWidget);
+          contentList.add(id);
+        });
+
+        return utf8.decode(secondResponse.bodyBytes);
+      } catch (secondError) {
+        print('Error in the second request: $secondError');
+        // 두 번째 URL로의 요청도 실패할 경우 예외 처리
+        return 'Both requests failed';
+      }
+    }
   }
 }

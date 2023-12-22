@@ -196,9 +196,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
         // Create a Post instance
         Post post = Post.fromMap(data);
-        print(post);
         posts.add(post);
-        print(posts);
       }
       // TODO: Use the 'posts' list in your application logic
     } catch (error) {
